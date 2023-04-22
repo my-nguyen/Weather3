@@ -23,11 +23,10 @@ public class WeatherViewModel extends AndroidViewModel {
     private static final String TAG = "WeatherViewModel";
 
     public MutableLiveData<Record> record = new MutableLiveData<>();
-    public MutableLiveData<String> location = new MutableLiveData<>();
+    public String location = fetchLocation();
 
     public WeatherViewModel(@NonNull Application application) {
         super(application);
-        fetchLocation();
     }
 
     public void fetchWeather(String location) {
@@ -52,11 +51,10 @@ public class WeatherViewModel extends AndroidViewModel {
         SharedPreferences.Editor preferences = getApplication().getApplicationContext().getSharedPreferences(PREFERENCE_NAME, MODE_PRIVATE).edit();
         preferences.putString(PREFERENCE_KEY, city);
         preferences.apply();
-        location.setValue(city);
     }
 
-    private void fetchLocation() {
+    private String fetchLocation() {
         SharedPreferences preferences = getApplication().getApplicationContext().getSharedPreferences(PREFERENCE_NAME, MODE_PRIVATE);
-        location.setValue(preferences.getString(PREFERENCE_KEY, null));
+        return preferences.getString(PREFERENCE_KEY, null);
     }
 }

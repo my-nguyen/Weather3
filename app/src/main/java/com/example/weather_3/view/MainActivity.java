@@ -1,7 +1,6 @@
 package com.example.weather_3.view;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,7 +28,6 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private List<Day> days;
     private DaysAdapter adapter;
-//    private String location;
     private WeatherViewModel viewModel;
 
     @Override
@@ -45,7 +43,15 @@ public class MainActivity extends AppCompatActivity {
         binding.recycler.setLayoutManager(layoutManager);
 
         viewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
+
+        if (viewModel.location != null) {
+            viewModel.fetchWeather(viewModel.location);
+        } else {
+            binding.getRoot().setVisibility(View.INVISIBLE);
+        }
+
         viewModel.record.observe(this, record -> {
+            binding.getRoot().setVisibility(View.VISIBLE);
             if (record == null) {
                 Toast.makeText(getApplicationContext(), "Please enter a well-known location, e.g. London", Toast.LENGTH_LONG).show();
             } else {
@@ -64,17 +70,7 @@ public class MainActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
 
                 // save the queried city
-//                location = record.city.name;
-                viewModel.location.setValue(record.city.name);
-            }
-        });
-
-        // try to retrieve last saved location
-        viewModel.location.observe(this, location -> {
-            if (location != null) {
-                viewModel.fetchWeather(location);
-            } else {
-                binding.getRoot().setVisibility(View.INVISIBLE);
+                viewModel.saveLocation(record.city.name);
             }
         });
     }
@@ -90,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
         // get a hold of the search menu item
         getMenuInflater().inflate(R.menu.menu_main, menu);
         MenuItem searchItem = menu.findItem(R.id.action_search);
-        SearchView searchView = (SearchView)searchItem.getActionView();
+        SearchView searchView = (SearchView) searchItem.getActionView();
 
         // listen for the search query
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -118,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
     private void hideKeyboard() {
         View view = getCurrentFocus();
         if (view != null) {
-            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
     }
